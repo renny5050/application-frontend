@@ -18,7 +18,14 @@ import { cilLockLocked, cilUser } from '@coreui/icons'
 
 const Login = () => {
   return (
-    <div className="bg-body-tertiary min-vh-100 d-flex flex-row align-items-center">
+    <div
+      className="bg-body-tertiary min-vh-100 d-flex flex-row align-items-center"
+      style={{
+        backgroundImage: 'url(src/assets/images/background-login.png)',
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+      }}
+    >
       <CContainer>
         <CRow className="justify-content-center">
           <CCol md={8}>
