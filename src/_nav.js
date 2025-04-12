@@ -46,6 +46,11 @@ const _nav = [
         name: 'Forgot Password',
         to: '/forgot',
       },
+      {
+        component: CNavItem,
+        name: 'Users',
+        to: '/users',
+      },
     ],
   }
 ]

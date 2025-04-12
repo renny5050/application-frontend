@@ -17,6 +17,7 @@ const Register = React.lazy(() => import('./views/pages/register/Register'))
 const Page404 = React.lazy(() => import('./views/pages/page404/Page404'))
 const Page500 = React.lazy(() => import('./views/pages/page500/Page500'))
 const Forgot = React.lazy(() => import('./views/pages/forgotpassword/forgotpass'))
+const Users = React.lazy(() => import('./views/pages/users/users'))
 
 const App = () => {
   const { isColorModeSet, setColorMode } = useColorModes('coreui-free-react-admin-template-theme')
@@ -51,6 +52,7 @@ const App = () => {
           <Route exact path="/404" name="Page 404" element={<Page404 />} />
           <Route exact path="/500" name="Page 500" element={<Page500 />} />
           <Route exact path="/forgot" name="Forgot Password" element={<Forgot />} />
+          <Route exact path="/users" name="Users" element={<Users />} />
           <Route path="*" name="Home" element={<DefaultLayout />} />
         </Routes>
       </Suspense>
