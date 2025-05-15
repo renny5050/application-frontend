@@ -1,0 +1,244 @@
+{
+  "estudiantes": [
+    {
+      "id": 1,
+      "nombre": "María",
+      "apellido": "Pérez",
+      "username": "maria.perez1",
+      "correo": "maria.perez1@musicacademy.com",
+      "cedula": "12345678",
+      "contrasena": "Academy2024!",
+      "notificaciones": [
+        {
+          "id": 1,
+          "mensaje": "Clase de Piano Principiante cancelada el próximo Lunes",
+          "fecha": "2024-03-15",
+          "tipo": "académica",
+          "leida": false
+        },
+        {
+          "id": 2,
+          "mensaje": "Nueva tarea asignada en Teoría Musical",
+          "fecha": "2024-03-14",
+          "tipo": "tarea",
+          "leida": true
+        }
+      ],
+      "clases": [
+        {
+          "id": 101,
+          "nombre": "Piano Principiante",
+          "horario": "Lunes y Miércoles 16:00-17:30",
+          "porcentaje_asistencia": 85,
+          "profesor": "Prof. Laura García"
+        },
+        {
+          "id": 105,
+          "nombre": "Teoría Musical",
+          "horario": "Viernes 10:00-11:30",
+          "porcentaje_asistencia": 90,
+          "profesor": "Prof. Carlos Fernández"
+        },
+        {
+          "id": 109,
+          "nombre": "Improvisación Jazz",
+          "horario": "Jueves 09:00-10:30",
+          "porcentaje_asistencia": 82,
+          "profesor": "Prof. Luis Romero"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "nombre": "Juan",
+      "apellido": "Gómez",
+      "username": "juan.gomez2",
+      "correo": "juan.gomez2@musicacademy.com",
+      "cedula": "23456789",
+      "contrasena": "Academy2024!",
+      "notificaciones": [
+        {
+          "id": 1,
+          "mensaje": "Recordatorio: Prueba de Composición Musical este Sábado",
+          "fecha": "2024-03-16",
+          "tipo": "recordatorio",
+          "leida": false
+        },
+        {
+          "id": 2,
+          "mensaje": "Cambio de aula para Técnica de Grabación",
+          "fecha": "2024-03-13",
+          "tipo": "logística",
+          "leida": true
+        }
+      ],
+      "clases": [
+        {
+          "id": 102,
+          "nombre": "Guitarra Clásica",
+          "horario": "Martes y Jueves 18:00-19:30",
+          "porcentaje_asistencia": 75,
+          "profesor": "Prof. Javier López"
+        },
+        {
+          "id": 104,
+          "nombre": "Composición Musical",
+          "horario": "Sábado 09:00-11:00",
+          "porcentaje_asistencia": 88,
+          "profesor": "Prof. Ana Rodríguez"
+        },
+        {
+          "id": 110,
+          "nombre": "Técnica de Grabación",
+          "horario": "Miércoles 20:00-21:30",
+          "porcentaje_asistencia": 68,
+          "profesor": "Prof. Andrea Morales"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "nombre": "Ana",
+      "apellido": "Rodríguez",
+      "username": "ana.rodriguez3",
+      "correo": "ana.rodriguez3@musicacademy.com",
+      "cedula": "34567890",
+      "contrasena": "Academy2024!",
+      "notificaciones": [
+        {
+          "id": 1,
+          "mensaje": "Nuevo material de estudio disponible en Música de Cámara",
+          "fecha": "2024-03-14",
+          "tipo": "académica",
+          "leida": false
+        },
+        {
+          "id": 2,
+          "mensaje": "Reunión de Orquesta Juvenil pospuesta",
+          "fecha": "2024-03-12",
+          "tipo": "anuncio",
+          "leida": true
+        }
+      ],
+      "clases": [
+        {
+          "id": 103,
+          "nombre": "Violín Moderno",
+          "horario": "Miércoles y Viernes 17:00-18:30",
+          "porcentaje_asistencia": 92,
+          "profesor": "Prof. Marta Martínez"
+        },
+        {
+          "id": 106,
+          "nombre": "Orquesta Juvenil",
+          "horario": "Sábado 15:00-17:00",
+          "porcentaje_asistencia": 80,
+          "profesor": "Prof. Diego Gómez"
+        },
+        {
+          "id": 111,
+          "nombre": "Música de Cámara",
+          "horario": "Martes 14:00-15:30",
+          "porcentaje_asistencia": 87,
+          "profesor": "Prof. Clara Núñez"
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "nombre": "Carlos",
+      "apellido": "Sánchez",
+      "username": "carlos.sanchez4",
+      "correo": "carlos.sanchez4@musicacademy.com",
+      "cedula": "45678901",
+      "contrasena": "Academy2024!",
+      "notificaciones": [
+        {
+          "id": 1,
+          "mensaje": "Actualización del sistema de calificaciones",
+          "fecha": "2024-03-13",
+          "tipo": "sistema",
+          "leida": true
+        },
+        {
+          "id": 2,
+          "mensaje": "Recordatorio de pago pendiente",
+          "fecha": "2024-03-10",
+          "tipo": "financiera",
+          "leida": false
+        }
+      ],
+      "clases": [
+        {
+          "id": 102,
+          "nombre": "Guitarra Clásica",
+          "horario": "Martes y Jueves 18:00-19:30",
+          "porcentaje_asistencia": 70,
+          "profesor": "Prof. Javier López"
+        },
+        {
+          "id": 107,
+          "nombre": "Historia de la Música",
+          "horario": "Lunes 19:00-21:00",
+          "porcentaje_asistencia": 95,
+          "profesor": "Prof. Sofía Sánchez"
+        },
+        {
+          "id": 112,
+          "nombre": "DJ y Producción Electrónica",
+          "horario": "Viernes 19:00-21:00",
+          "porcentaje_asistencia": 63,
+          "profesor": "Prof. Pablo Vega"
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "nombre": "Luisa",
+      "apellido": "Fernández",
+      "username": "luisa.fernandez5",
+      "correo": "luisa.fernandez5@musicacademy.com",
+      "cedula": "56789012",
+      "contrasena": "Academy2024!",
+      "notificaciones": [
+        {
+          "id": 1,
+          "mensaje": "Nuevo mensaje de Prof. Elena Díaz",
+          "fecha": "2024-03-14",
+          "tipo": "mensaje",
+          "leida": false
+        },
+        {
+          "id": 2,
+          "mensaje": "Encuesta de satisfacción disponible",
+          "fecha": "2024-03-12",
+          "tipo": "sistema",
+          "leida": true
+        }
+      ],
+      "clases": [
+        {
+          "id": 108,
+          "nombre": "Canto Lírico",
+          "horario": "Jueves 16:00-18:00",
+          "porcentaje_asistencia": 85,
+          "profesor": "Prof. Elena Díaz"
+        },
+        {
+          "id": 106,
+          "nombre": "Orquesta Juvenil",
+          "horario": "Sábado 15:00-17:00",
+          "porcentaje_asistencia": 78,
+          "profesor": "Prof. Diego Gómez"
+        },
+        {
+          "id": 113,
+          "nombre": "Ópera y Repertorio",
+          "horario": "Lunes 10:00-12:00",
+          "porcentaje_asistencia": 91,
+          "profesor": "Prof. Ricardo Torres"
+        }
+      ]
+    }
+  ]
+}

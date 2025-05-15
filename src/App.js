@@ -18,6 +18,8 @@ const Page404 = React.lazy(() => import('./views/pages/page404/Page404'))
 const Page500 = React.lazy(() => import('./views/pages/page500/Page500'))
 const Forgot = React.lazy(() => import('./views/pages/forgotpassword/forgotpass'))
 const Users = React.lazy(() => import('./views/pages/users/users'))
+const Dashboard = React.lazy(() => import('./views/pages/StudentDashboard/Dashboard'))
+const TeacherDashboard = React.lazy(() => import('./views/pages/TeacherDashboard/TeacherDashboard'))  
 
 const App = () => {
   const { isColorModeSet, setColorMode } = useColorModes('coreui-free-react-admin-template-theme')
@@ -54,6 +56,8 @@ const App = () => {
           <Route exact path="/forgot" name="Forgot Password" element={<Forgot />} />
           <Route exact path="/users" name="Users" element={<Users />} />
           <Route path="*" name="Home" element={<DefaultLayout />} />
+          <Route path="/student/:id" name="Student Dashboard" element={<Dashboard />} />
+          <Route path="/teacher-dashboard" name="Teacher Dashboard" element={<TeacherDashboard />} />
         </Routes>
       </Suspense>
     </HashRouter>

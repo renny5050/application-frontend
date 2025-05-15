@@ -51,6 +51,16 @@ const _nav = [
         name: 'Users',
         to: '/users',
       },
+      {
+        component: CNavItem,
+        name: 'Student Dashboard',
+        to: '/student/1',
+      },
+      {
+        component: CNavItem,
+        name: 'Teacher Dashboard',
+        to: '/teacher-dashboard',
+      },
     ],
   }
 ]
