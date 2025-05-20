@@ -7,6 +7,8 @@ import DocsComponents from './DocsComponents'
 import DocsIcons from './DocsIcons'
 import DocsLink from './DocsLink'
 import DocsExample from './DocsExample'
+import AdminContent from './AdminContent'
+import AdminSidebar from './AdminSidebar'
 
 export {
   AppContent,
@@ -18,4 +20,6 @@ export {
   DocsIcons,
   DocsLink,
   DocsExample,
+  AdminContent,
+  AdminSidebar
 }
