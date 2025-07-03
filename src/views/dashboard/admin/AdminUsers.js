@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import {
   CCard,
   CCardHeader,
@@ -18,68 +18,43 @@ import {
   CTableRow,
   CTableHeaderCell,
   CTableBody,
-  CTableDataCell
+  CTableDataCell,
+  CSpinner
 } from '@coreui/react'
 import CIcon from '@coreui/icons-react'
-import { cilUserPlus, cilPencil, cilSave, cilX, cilTrash } from '@coreui/icons'
+import { cilUserPlus, cilPencil, cilSave, cilX, cilTrash, cilReload } from '@coreui/icons'
 import AdminUserClass from './AdminUserClass'
 
 const UserManagement = () => {
-  // Estado inicial con datos de ejemplo
-  const [users, setUsers] = useState([
-    {
-      id: 1,
-      email: 'admin@universidad.com',
-      password: 'admin123',
-      dni: '12345678',
-      role: 'admin',
-      especialidad: ''
-    },
-    {
-      id: 2,
-      email: 'prof.matematicas@universidad.com',
-      password: 'matematica2024',
-      dni: '23456789',
-      role: 'profesor',
-      especialidad: 'Matemáticas Avanzadas'
-    },
-    {
-      id: 3,
-      email: 'estudiante1@universidad.com',
-      password: 'estudiante123',
-      dni: '34567890',
-      role: 'estudiante',
-      especialidad: ''
-    }
-  ])
-
-  const [classesData, setClassesData] = useState([
-      { id: 1, name: 'Matemáticas Avanzadas', professor: 'Dr. Pérez', schedule: 'Lun 10:00 - 12:00' },
-      { id: 2, name: 'Física Cuántica', professor: 'Dra. Gómez', schedule: 'Mar 14:00 - 16:00' },
-      { id: 3, name: 'Literatura Contemporánea', professor: 'Prof. Martínez', schedule: 'Vie 09:00 - 13:00' },
-      { id: 4, name: 'Programación Web', professor: 'Ing. Rodríguez', schedule: 'Lun 16:00 - 18:00' },
-      { id: 5, name: 'Historia del Arte', professor: 'Mtro. Sánchez', schedule: 'Mié 08:00 - 10:00' },
-    ])
-
+  const [users, setUsers] = useState([])
+  const [loading, setLoading] = useState(false)
+  const [loadingClasses, setLoadingClasses] = useState(false)
+  const [loadingSpecialties, setLoadingSpecialties] = useState(false)
+  const [fetchError, setFetchError] = useState('')
+  const [fetchErrorSpecialties, setFetchErrorSpecialties] = useState('')
+  const [classesData, setClassesData] = useState([])
+  const [specialties, setSpecialties] = useState([])
   const [showCreateModal, setShowCreateModal] = useState(false)
   const [showEditModal, setShowEditModal] = useState(false)
   const [selectedUser, setSelectedUser] = useState(null)
-  const [selectedClass, setSelectedClass] = useState(null)
   const [errors, setErrors] = useState({})
   const [successMessage, setSuccessMessage] = useState('')
   const [newUser, setNewUser] = useState({
+    firstName: '',
+    lastName: '',
     email: '',
     password: '',
     confirmPassword: '',
     dni: '',
     role: '',
-    especialidad: ''
+    specialty_id: ''
   })
+  const [specialtyNames, setSpecialtyNames] = useState({})
 
   const roles = [
-    { label: 'Administrador', value: 'admin' },
-    { label: 'Profesor', value: 'profesor' },
-    { label: 'Estudiante', value: 'estudiante' }
+    { label: 'Administrador', value: 1 },
+    { label: 'Profesor', value: 2 },
+    { label: 'Estudiante', value: 3 }
   ]
 
   const validateEmail = (email) => {
@@ -88,21 +63,19 @@ const UserManagement = () => {
 
   const validateForm = (userData, isEdit = false) => {
     const newErrors = {}
-    
-    // Validación de email para ambos formularios
+
     if (!userData.email) {
       newErrors.email = 'Email es requerido'
     } else if (!validateEmail(userData.email)) {
       newErrors.email = 'Email inválido'
     }
-    
+
     if (!userData.role) newErrors.role = 'Rol es requerido'
-    
-    if (userData.role === 'profesor' && !userData.especialidad) {
+
+    if (userData.role === 2 && !userData.specialty_id) {
       newErrors.especialidad = 'Especialidad es requerida para profesores'
     }
 
-    // Validaciones específicas de creación
     if (!isEdit) {
       if (!userData.password) {
         newErrors.password = 'Contraseña es requerida'
@@ -117,14 +90,187 @@ const UserManagement = () => {
     return Object.keys(newErrors).length === 0
   }
 
+  const getRoleName = (roleId) => {
+    const role = roles.find(r => r.value === roleId)
+    return role ? role.label : 'Desconocido'
+  }
+
+  const fetchSpecialtyName = async (specialtyId) => {
+    try {
+      const token = localStorage.getItem('authToken')
+      if (!token) throw new Error('No se encontró token de autenticación')
+
+      const response = await fetch(`http://localhost:3002/api/specialties/${specialtyId}`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      })
+
+      if (!response.ok) {
+        throw new Error(`Error al obtener especialidad ${specialtyId}`)
+      }
+
+      const data = await response.json()
+      return data.name
+    } catch (error) {
+      console.error(`Error fetching specialty ${specialtyId}:`, error)
+      return 'Especialidad desconocida'
+    }
+  }
+
+  const fetchUsers = async () => {
+    setLoading(true)
+    setFetchError('')
+    try {
+      const token = localStorage.getItem('authToken')
+      if (!token) throw new Error('No se encontró token de autenticación')
+
+      const response = await fetch('http://localhost:3002/api/users', {
+        headers: { 'Authorization': `Bearer ${token}` }
+      })
+
+      if (!response.ok) {
+        throw new Error('Error al obtener usuarios')
+      }
+
+      const data = await response.json()
+      const formattedUsers = data.map(user => ({
+        id: user.id,
+        email: user.email,
+        firstName: user.first_name,
+        lastName: user.last_name,
+        dni: user.dni,
+        role: user.role_id,
+        specialty_id: user.specialty_id
+      }))
+      setUsers(formattedUsers)
+
+      // Obtener nombres de especialidades para profesores
+      const specialtyIds = data
+        .filter(user => user.role_id === 2 && user.specialty_id)
+        .map(user => user.specialty_id)
+      
+      // Eliminar duplicados
+      const uniqueSpecialtyIds = [...new Set(specialtyIds)]
+      
+      // Obtener nombres para cada especialidad única
+      const names = {}
+      for (const id of uniqueSpecialtyIds) {
+        names[id] = await fetchSpecialtyName(id)
+      }
+      setSpecialtyNames(names)
+      
+    } catch (error) {
+      console.error('Error fetching users:', error)
+      setFetchError(error.message || 'Error al cargar usuarios')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const fetchClasses = async () => {
+    setLoadingClasses(true)
+    setFetchError('')
+    try {
+      const token = localStorage.getItem('authToken')
+      if (!token) throw new Error('No se encontró token de autenticación')
+
+      const response = await fetch('http://localhost:3002/api/classes', {
+        headers: { 'Authorization': `Bearer ${token}` }
+      })
+
+      if (!response.ok) {
+        throw new Error('Error al obtener clases')
+      }
+
+      const data = await response.json()
+      setClassesData(data)
+    } catch (error) {
+      console.error('Error fetching classes:', error)
+      setFetchError(error.message || 'Error al cargar clases')
+    } finally {
+      setLoadingClasses(false)
+    }
+  }
+
+  const fetchSpecialties = async () => {
+    setLoadingSpecialties(true)
+    setFetchErrorSpecialties('')
+    try {
+      const token = localStorage.getItem('authToken')
+      if (!token) throw new Error('No se encontró token de autenticación')
+
+      const response = await fetch('http://localhost:3002/api/specialties', {
+        headers: { 'Authorization': `Bearer ${token}` }
+      })
+
+      if (!response.ok) {
+        throw new Error('Error al obtener especialidades')
+      }
+
+      const data = await response.json()
+      setSpecialties(data)
+    } catch (error) {
+      console.error('Error fetching specialties:', error)
+      setFetchErrorSpecialties(error.message || 'Error al cargar especialidades')
+    } finally {
+      setLoadingSpecialties(false)
+    }
+  }
+
+  // Cargar todos los datos al montar
+  useEffect(() => {
+    fetchUsers()
+    fetchClasses()
+    fetchSpecialties()
+  }, [])
+
   const handleCreateUser = async () => {
     if (!validateForm(newUser)) return
 
+    setErrors({})
+    setSuccessMessage('')
     try {
-      // Simular llamada API
-      await new Promise(resolve => setTimeout(resolve, 1000))
+      const token = localStorage.getItem('authToken')
+      if (!token) throw new Error('No se encontró token de autenticación')
+
+      const response = await fetch('http://localhost:3002/api/users', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          firstName: newUser.firstName,
+          lastName: newUser.lastName,
+          email: newUser.email,
+          password: newUser.password,
+          dni: newUser.dni,
+          role_id: newUser.role,
+          specialty_id: newUser.role === 2 ? parseInt(newUser.specialty_id) : null
+        })
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.error || 'Error al crear usuario')
+      }
+
+      const createdUser = await response.json()
+      setUsers([...users, {
+        ...createdUser,
+        firstName: createdUser.first_name,
+        lastName: createdUser.last_name,
+        specialty_id: createdUser.specialty_id
+      }])
       
-      setUsers([...users, { ...newUser, id: Date.now() }])
+      // Si es profesor, obtener nombre de especialidad
+      if (createdUser.role_id === 2 && createdUser.specialty_id) {
+        const name = await fetchSpecialtyName(createdUser.specialty_id)
+        setSpecialtyNames(prev => ({
+          ...prev,
+          [createdUser.specialty_id]: name
+        }))
+      }
+      
       setSuccessMessage('Usuario creado exitosamente!')
       setShowCreateModal(false)
       setNewUser({
@@ -133,42 +279,100 @@ const UserManagement = () => {
         confirmPassword: '',
         dni: '',
         role: '',
-        especialidad: ''
+        specialty_id: '',
+        firstName: '',
+        lastName: ''
       })
-      
+
       setTimeout(() => setSuccessMessage(''), 3000)
     } catch (error) {
-      setErrors({ submit: 'Error al crear usuario' })
+      setErrors({ submit: error.message || 'Error al crear usuario' })
     }
   }
 
   const handleUpdateUser = async () => {
     if (!validateForm(selectedUser, true)) return
 
+    setErrors({})
+    setSuccessMessage('')
     try {
-      // Simular llamada API
-      await new Promise(resolve => setTimeout(resolve, 1000))
+      const token = localStorage.getItem('authToken')
+      if (!token) throw new Error('No se encontró token de autenticación')
+
+      const response = await fetch(`http://localhost:3002/api/users/${selectedUser.id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          email: selectedUser.email,
+          role_id: selectedUser.role,
+          specialty_id: selectedUser.role === 2 ? parseInt(selectedUser.specialty_id) : null
+        })
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.error || 'Error al actualizar usuario')
+      }
+
+      const updatedUser = await response.json()
+      const updatedUserData = {
+        ...updatedUser,
+        firstName: updatedUser.first_name,
+        lastName: updatedUser.last_name,
+        specialty_id: updatedUser.specialty_id
+      }
       
-      setUsers(users.map(user => 
-        user.id === selectedUser.id ? { ...user, ...selectedUser } : user
-      ))
+      setUsers(users.map(user => user.id === selectedUser.id ? updatedUserData : user))
+      
+      // Actualizar nombre de especialidad si cambió
+      if (selectedUser.role === 2 && selectedUser.specialty_id) {
+        if (!specialtyNames[selectedUser.specialty_id]) {
+          const name = await fetchSpecialtyName(selectedUser.specialty_id)
+          setSpecialtyNames(prev => ({
+            ...prev,
+            [selectedUser.specialty_id]: name
+          }))
+        }
+      }
+      
       setSuccessMessage('Usuario actualizado exitosamente!')
       setShowEditModal(false)
-      
       setTimeout(() => setSuccessMessage(''), 3000)
     } catch (error) {
-      setErrors({ submit: 'Error al actualizar usuario' })
+      setErrors({ submit: error.message || 'Error al actualizar usuario' })
     }
   }
 
-  const handleDeleteUser = (userId) => {
-    setUsers(users.filter(user => user.id !== userId))
-    setSuccessMessage('Usuario eliminado exitosamente!')
-    setTimeout(() => setSuccessMessage(''), 3000)
+  const handleDeleteUser = async (userId) => {
+    try {
+      const token = localStorage.getItem('authToken')
+      if (!token) throw new Error('No se encontró token de autenticación')
+
+      const response = await fetch(`http://localhost:3002/api/users/${userId}`, {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${token}` }
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.error || 'Error al eliminar usuario')
+      }
+
+      setUsers(users.filter(user => user.id !== userId))
+      setSuccessMessage('Usuario eliminado exitosamente!')
+      setTimeout(() => setSuccessMessage(''), 3000)
+    } catch (error) {
+      setErrors({ submit: error.message || 'Error al eliminar usuario' })
+    }
   }
 
-  const handleEditClass = () => {
-    console.log(selectedClass);
+  const handleRefresh = () => {
+    fetchUsers()
+    fetchClasses()
+    fetchSpecialties()
   }
 
   return (
@@ -176,15 +380,39 @@ const UserManagement = () => {
       <CCard className="mb-4">
         <CCardHeader className="d-flex justify-content-between align-items-center">
           <h5>Gestión de Usuarios</h5>
-          <CButton 
-            color="primary" 
-            onClick={() => setShowCreateModal(true)}
-          >
-            <CIcon icon={cilUserPlus} className="me-2" />
-            Nuevo Usuario
-          </CButton>
+          <div className="d-flex gap-2">
+            <CButton 
+              color="secondary" 
+              onClick={handleRefresh}
+              disabled={loading || loadingClasses || loadingSpecialties}
+            >
+              <CIcon icon={cilReload} className={loading || loadingClasses || loadingSpecialties ? "spin-icon" : ""} />
+              {loading || loadingClasses || loadingSpecialties ? ' Cargando...' : ' Actualizar'}
+            </CButton>
+            <CButton 
+              color="primary" 
+              onClick={() => {
+                setNewUser({
+                  email: '',
+                  password: '',
+                  confirmPassword: '',
+                  dni: '',
+                  role: '',
+                  specialty_id: '',
+                  firstName: '',
+                  lastName: ''
+                })
+                setShowCreateModal(true)
+                setFetchErrorSpecialties('')
+                setErrors({})
+                setSuccessMessage('')
+              }}
+            >
+              <CIcon icon={cilUserPlus} className="me-2" />
+              Nuevo Usuario
+            </CButton>
+          </div>
         </CCardHeader>
-        
         <CCardBody>
           {successMessage && (
             <CAlert color="success" className="mb-4">
@@ -192,52 +420,75 @@ const UserManagement = () => {
             </CAlert>
           )}
 
-          <CTable hover responsive>
-            <CTableHead>
-              <CTableRow>
-                <CTableHeaderCell>Email</CTableHeaderCell>
-                <CTableHeaderCell>Rol</CTableHeaderCell>
-                <CTableHeaderCell>DNI</CTableHeaderCell>
-                <CTableHeaderCell>Especialidad</CTableHeaderCell>
-                <CTableHeaderCell>Acciones</CTableHeaderCell>
-              </CTableRow>
-            </CTableHead>
-            <CTableBody>
-              {users.map(user => (
-                <CTableRow key={user.id}>
-                  <CTableDataCell>{user.email}</CTableDataCell>
-                  <CTableDataCell>
-                    {roles.find(r => r.value === user.role)?.label}
-                  </CTableDataCell>
-                  <CTableDataCell>{user.dni}</CTableDataCell>
-                  <CTableDataCell>
-                    {user.role === 'profesor' ? user.especialidad : '-'}
-                  </CTableDataCell>
-                  <CTableDataCell>
-                    <div className="d-flex gap-2">
-                      <CButton 
-                        color="primary" 
-                        size="sm"
-                        onClick={() => {
-                          setSelectedUser(user)
-                          setShowEditModal(true)
-                        }}
-                      >
-                        <CIcon icon={cilPencil} />
-                      </CButton>
-                      <CButton 
-                        color="danger" 
-                        size="sm"
-                        onClick={() => handleDeleteUser(user.id)}
-                      >
-                        <CIcon icon={cilTrash} />
-                      </CButton>
-                    </div>
-                  </CTableDataCell>
+          {fetchError && (
+            <CAlert color="danger" className="mb-4">
+              {fetchError}
+            </CAlert>
+          )}
+
+          {loading ? (
+            <div className="d-flex justify-content-center my-5">
+              <CSpinner />
+            </div>
+          ) : (
+            <CTable hover responsive>
+              <CTableHead>
+                <CTableRow>
+                  <CTableHeaderCell>Email</CTableHeaderCell>
+                  <CTableHeaderCell>Nombre</CTableHeaderCell>
+                  <CTableHeaderCell>Apellido</CTableHeaderCell>
+                  <CTableHeaderCell>Rol</CTableHeaderCell>
+                  <CTableHeaderCell>DNI</CTableHeaderCell>
+                  <CTableHeaderCell>Especialidad</CTableHeaderCell>
+                  <CTableHeaderCell>Acciones</CTableHeaderCell>
                 </CTableRow>
-              ))}
-            </CTableBody>
-          </CTable>
+              </CTableHead>
+              <CTableBody>
+                {users.map(user => (
+                  <CTableRow key={user.id}>
+                    <CTableDataCell>{user.email}</CTableDataCell>
+                    <CTableDataCell>{user.firstName}</CTableDataCell>
+                    <CTableDataCell>{user.lastName}</CTableDataCell>
+                    <CTableDataCell>{getRoleName(user.role)}</CTableDataCell>
+                    <CTableDataCell>{user.dni}</CTableDataCell>
+                    <CTableDataCell>
+                      {user.role === 2 && user.specialty_id
+                        ? specialtyNames[user.specialty_id] || 'Cargando...'
+                        : user.role === 2 && !user.specialty_id
+                          ? 'Sin especialidad'
+                          : '-'}
+                    </CTableDataCell>
+                    <CTableDataCell>
+                      <div className="d-flex gap-2">
+                        <CButton 
+                          color="primary" 
+                          size="sm"
+                          onClick={() => {
+                            setSelectedUser({
+                              ...user,
+                              specialty_id: user.specialty_id
+                            })
+                            setErrors({})
+                            setSuccessMessage('')
+                            setShowEditModal(true)
+                          }}
+                        >
+                          <CIcon icon={cilPencil} />
+                        </CButton>
+                        <CButton 
+                          color="danger" 
+                          size="sm"
+                          onClick={() => handleDeleteUser(user.id)}
+                        >
+                          <CIcon icon={cilTrash} />
+                        </CButton>
+                      </div>
+                    </CTableDataCell>
+                  </CTableRow>
+                ))}
+              </CTableBody>
+            </CTable>
+          )}
         </CCardBody>
       </CCard>
 
@@ -250,6 +501,28 @@ const UserManagement = () => {
           <CForm>
             <div className="mb-3">
               <CFormInput
+                label="Nombre"
+                placeholder="Juan"
+                value={newUser.firstName}
+                onChange={(e) => setNewUser({...newUser, firstName: e.target.value})}
+                invalid={!!errors.firstName}
+                feedback={errors.firstName}
+                required
+              />
+            </div>
+            <div className="mb-3">
+              <CFormInput
+                label="Apellido"
+                placeholder="Pérez"
+                value={newUser.lastName}
+                onChange={(e) => setNewUser({...newUser, lastName: e.target.value})}
+                invalid={!!errors.lastName}
+                feedback={errors.lastName}
+                required
+              />
+            </div>
+            <div className="mb-3">
+              <CFormInput
                 type="email"
                 label="Email"
                 placeholder="ejemplo@dominio.com"
@@ -260,7 +533,6 @@ const UserManagement = () => {
                 required
               />
             </div>
-            
             <div className="mb-3">
               <CFormInput
                 type="password"
@@ -269,10 +541,9 @@ const UserManagement = () => {
                 onChange={(e) => setNewUser({...newUser, password: e.target.value})}
                 invalid={!!errors.password}
                 feedback={errors.password}
-                required
+                required={!newUser.id}
               />
             </div>
-
             <div className="mb-3">
               <CFormInput
                 type="password"
@@ -281,10 +552,9 @@ const UserManagement = () => {
                 onChange={(e) => setNewUser({...newUser, confirmPassword: e.target.value})}
                 invalid={!!errors.confirmPassword}
                 feedback={errors.confirmPassword}
-                required
+                required={!newUser.id}
               />
             </div>
-            
             <div className="mb-3">
               <CFormInput
                 label="DNI"
@@ -296,12 +566,11 @@ const UserManagement = () => {
                 required
               />
             </div>
-            
             <div className="mb-3">
               <CFormSelect
                 label="Rol"
                 value={newUser.role}
-                onChange={(e) => setNewUser({...newUser, role: e.target.value})}
+                onChange={(e) => setNewUser({...newUser, role: parseInt(e.target.value), specialty_id: ''})}
                 invalid={!!errors.role}
                 feedback={errors.role}
                 required
@@ -314,18 +583,34 @@ const UserManagement = () => {
                 ))}
               </CFormSelect>
             </div>
-            
-            {newUser.role === 'profesor' && (
+            {newUser.role === 2 && (
               <div className="mb-3">
-                <CFormInput
+                <CFormSelect
                   label="Especialidad"
-                  value={newUser.especialidad}
-                  onChange={(e) => setNewUser({...newUser, especialidad: e.target.value})}
+                  value={newUser.specialty_id}
+                  onChange={(e) => setNewUser({...newUser, specialty_id: e.target.value})}
                   invalid={!!errors.especialidad}
                   feedback={errors.especialidad}
-                  required={newUser.role === 'profesor'}
-                />
+                  required={newUser.role === 2}
+                  disabled={loadingSpecialties}
+                >
+                  <option value="">Seleccionar especialidad</option>
+                  {specialties.map(specialty => (
+                    <option key={specialty.id} value={specialty.id}>
+                      {specialty.name}
+                    </option>
+                  ))}
+                </CFormSelect>
+                {loadingSpecialties && <small className="text-muted">Cargando especialidades...</small>}
+                {fetchErrorSpecialties && (
+                  <CAlert color="danger" className="mt-2 mb-0">
+                    {fetchErrorSpecialties}
+                  </CAlert>
+                )}
               </div>
+            )}
+            {errors.submit && (
+              <CAlert color="danger" className="mt-3">{errors.submit}</CAlert>
             )}
           </CForm>
         </CModalBody>
@@ -342,68 +627,91 @@ const UserManagement = () => {
       </CModal>
 
       {/* Modal Editar Usuario */}
-      <CModal visible={showEditModal} onClose={() => setShowEditModal(false)}>
+      <CModal size="lg" visible={showEditModal} onClose={() => setShowEditModal(false)}>
         <CModalHeader>
           <CModalTitle>Editar Usuario</CModalTitle>
         </CModalHeader>
         <CModalBody>
-          <CForm>
-            <div className="mb-3">
-              <CFormInput
-                type="email"
-                label="Email"
-                value={selectedUser?.email || ''}
-                onChange={(e) => setSelectedUser({...selectedUser, email: e.target.value})}
-                invalid={!!errors.email}
-                feedback={errors.email}
-                required
-              />
+          <div className="row">
+            <div className="col-md-6">
+              <CForm>
+                <div className="mb-3">
+                  <CFormInput
+                    type="email"
+                    label="Email"
+                    value={selectedUser?.email || ''}
+                    onChange={(e) => setSelectedUser({...selectedUser, email: e.target.value})}
+                    invalid={!!errors.email}
+                    feedback={errors.email}
+                    required
+                  />
+                </div>
+                <div className="mb-3">
+                  <CFormInput
+                    label="DNI"
+                    value={selectedUser?.dni || ''}
+                    readOnly
+                  />
+                </div>
+                <div className="mb-3">
+                  <CFormSelect
+                    label="Rol"
+                    value={selectedUser?.role || ''}
+                    onChange={(e) => setSelectedUser({...selectedUser, role: parseInt(e.target.value), specialty_id: ''})}
+                    invalid={!!errors.role}
+                    feedback={errors.role}
+                    required
+                  >
+                    <option value="">Seleccionar rol</option>
+                    {roles.map(role => (
+                      <option key={role.value} value={role.value}>
+                        {role.label}
+                      </option>
+                    ))}
+                  </CFormSelect>
+                </div>
+                {selectedUser?.role === 2 && (
+                  <div className="mb-3">
+                    <CFormSelect
+                      label="Especialidad"
+                      value={selectedUser?.specialty_id || ''}
+                      onChange={(e) => setSelectedUser({...selectedUser, specialty_id: e.target.value})}
+                      invalid={!!errors.especialidad}
+                      feedback={errors.especialidad}
+                      required={selectedUser?.role === 2}
+                      disabled={loadingSpecialties}
+                    >
+                      <option value="">Seleccionar especialidad</option>
+                      {specialties.map(specialty => (
+                        <option key={specialty.id} value={specialty.id}>
+                          {specialty.name}
+                        </option>
+                      ))}
+                    </CFormSelect>
+                    {loadingSpecialties && <small className="text-muted">Cargando especialidades...</small>}
+                    {fetchErrorSpecialties && (
+                      <CAlert color="danger" className="mt-2 mb-0">
+                        {fetchErrorSpecialties}
+                      </CAlert>
+                    )}
+                  </div>
+                )}
+                {errors.submit && (
+                  <CAlert color="danger">{errors.submit}</CAlert>
+                )}
+              </CForm>
             </div>
-            
-            <div className="mb-3">
-              <CFormInput
-                label="DNI"
-                value={selectedUser?.dni || ''}
-                readOnly
-              />
-            </div>
-            
-            <div className="mb-3">
-              <CFormSelect
-                label="Rol"
-                value={selectedUser?.role || ''}
-                onChange={(e) => setSelectedUser({...selectedUser, role: e.target.value})}
-                invalid={!!errors.role}
-                feedback={errors.role}
-                required
-              >
-                <option value="">Seleccionar rol</option>
-                {roles.map(role => (
-                  <option key={role.value} value={role.value}>
-                    {role.label}
-                  </option>
-                ))}
-              </CFormSelect>
-            </div>
-
-           
-            
-            {selectedUser?.role === 'profesor' && (
-              <div className="mb-3">
-                <CFormInput
-                  label="Especialidad"
-                  value={selectedUser?.especialidad || ''}
-                  onChange={(e) => setSelectedUser({...selectedUser, especialidad: e.target.value})}
-                  invalid={!!errors.especialidad}
-                  feedback={errors.especialidad}
-                  required={selectedUser?.role === 'profesor'}
+            <div className="col-md-6">
+              <h5>Clases asociadas</h5>
+              {selectedUser && (
+                <AdminUserClass 
+                  user={selectedUser} 
+                  classes={classesData} 
+                  loading={loadingClasses}
                 />
-              </div>
-            )}
-          </CForm>
-
-          <AdminUserClass/>
-
+              )}
+            </div>
+          </div>
         </CModalBody>
         <CModalFooter>
           <CButton color="secondary" onClick={() => setShowEditModal(false)}>
@@ -416,6 +724,16 @@ const UserManagement = () => {
           </CButton>
         </CModalFooter>
       </CModal>
+
+      <style jsx>{`
+        .spin-icon {
+          animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+          from { transform: rotate(0deg); }
+          to { transform: rotate(360deg); }
+        }
+      `}</style>
     </>
   )
 }

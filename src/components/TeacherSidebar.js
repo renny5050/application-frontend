@@ -10,70 +10,35 @@ import {
 } from '@coreui/react'
 import CIcon from '@coreui/icons-react'
 import { AppSidebarNav } from './AppSidebarNav'
-import { logo } from 'src/assets/brand/logo'
 import { sygnet } from 'src/assets/brand/sygnet'
 import {
-  cilPeople,
-  cilInbox,
-  cilEducation,
   cilSpeedometer,
-  cilLockLocked
+  cilClipboard,
+  cilCommentSquare
 } from '@coreui/icons'
 
-const adminNavigation = [
+const teacherNavigation = [
   {
     component: 'CSidebarNavItem',
     name: 'Dashboard',
-    to: '/dashboard/admin',
+    to: '/dashboard/teacher',
     icon: <CIcon icon={cilSpeedometer} customClassName="nav-icon" />,
   },
   {
-    component: 'CSidebarNavTitle',
-    name: 'Gestión Principal'
+    component: 'CSidebarNavItem',
+    name: 'Subir Asistencias',
+    to: '/dashboard/teacher/attendance',
+    icon: <CIcon icon={cilClipboard} customClassName="nav-icon" />,
   },
   {
     component: 'CSidebarNavItem',
-    name: 'Usuarios',
-    to: '/dashboard/admin/users',
-    icon: <CIcon icon={cilPeople} customClassName="nav-icon" />,
-    badge: {
-      color: 'success',
-      text: 'NUEVO',
-    }
-  },
-  {
-    component: 'CSidebarNavItem',
-    name: 'Inventario',
-    to: '/dashboard/admin/inventory',
-    icon: <CIcon icon={cilInbox} customClassName="nav-icon" />,
-  },
-  {
-    component: 'CSidebarNavItem',
-    name: 'Especialidades',
-    to: '/dashboard/admin/specialties',
-    icon: <CIcon icon={cilLockLocked} customClassName="nav-icon" />,
-  },
-  {
-    component: 'CSidebarNavDropdown',
-    name: 'Clases',
-    route: '/dashboard/admin/classes',
-    icon: <CIcon icon={cilEducation} customClassName="nav-icon" />,
-    items: [
-      {
-        component: 'CSidebarNavItem',
-        name: 'Todas las clases',
-        to: '/dashboard/admin/classes',
-      },
-      {
-        component: 'CSidebarNavItem',
-        name: 'Crear Nueva Clase',
-        to: '/dashboard/admin/create',
-      },
-    ],
+    name: 'Mensajes de Clase',
+    to: '/dashboard/teacher/classmessage',
+    icon: <CIcon icon={cilCommentSquare} customClassName="nav-icon" />,
   }
 ]
 
-const AppSidebar = () => {
+const TeacherSidebar = () => {
   const dispatch = useDispatch()
   const unfoldable = useSelector((state) => state.sidebarUnfoldable)
   const sidebarShow = useSelector((state) => state.sidebarShow)
@@ -90,14 +55,14 @@ const AppSidebar = () => {
       }}
     >
       <CSidebarHeader className="border-bottom">
-        <CSidebarBrand to="/admin">
-
+        <CSidebarBrand to="/dashboard/teacher">
           <CIcon 
             customClassName="sidebar-brand-narrow" 
             icon={sygnet} 
             height={40} 
             style={{ filter: 'brightness(0) invert(1)' }} 
           />
+          <span className="sidebar-brand-full ms-2">Panel del Profesor</span>
         </CSidebarBrand>
         <CCloseButton
           className="d-lg-none"
@@ -106,7 +71,7 @@ const AppSidebar = () => {
         />
       </CSidebarHeader>
       
-      <AppSidebarNav items={adminNavigation} />
+      <AppSidebarNav items={teacherNavigation} />
       
       <CSidebarFooter className="border-top d-none d-lg-flex">
         <CSidebarToggler
@@ -117,4 +82,4 @@ const AppSidebar = () => {
   )
 }
 
-export default React.memo(AppSidebar)
+export default React.memo(TeacherSidebar)

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react'
 import {
   CTable,
   CTableHead,
@@ -18,88 +18,218 @@ import {
   CModalFooter,
   CFormInput,
   CButton
-} from '@coreui/react';
-import CIcon from '@coreui/icons-react';
-import { cilPencil, cilTrash, cilWarning, cilPlus } from '@coreui/icons';
+} from '@coreui/react'
+import CIcon from '@coreui/icons-react'
+import { cilPencil, cilTrash, cilWarning, cilPlus } from '@coreui/icons'
 
 const AdminInventory = () => {
-  const [inventoryData, setInventoryData] = useState([
-    { id: 1, item: 'Laptop HP EliteBook', stock: 15, minStock: 10, status: 'In Stock' },
-    { id: 2, item: 'Silla Ergonómica', stock: 8, minStock: 15, status: 'Low Stock' },
-    { id: 3, item: 'Proyector Epson', stock: 3, minStock: 5, status: 'Critical' },
-    { id: 4, item: 'Kit de Laboratorio', stock: 22, minStock: 10, status: 'In Stock' },
-    { id: 5, item: 'Tabletas Gráficas', stock: 0, minStock: 5, status: 'Out of Stock' },
-  ]);
-
-  const [showModal, setShowModal] = useState(false);
+  const [inventoryData, setInventoryData] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
+  const [showModal, setShowModal] = useState(false)
   const [currentItem, setCurrentItem] = useState({
     id: null,
     item: '',
     stock: 0,
-    minStock: 0,
+    minStock: 10,
     status: 'In Stock'
-  });
+  })
 
-  const getStatusColor = (status) => {
-    switch(status) {
-      case 'In Stock': return 'success';
-      case 'Low Stock': return 'warning';
-      case 'Critical': return 'danger';
-      case 'Out of Stock': return 'secondary';
-      default: return 'secondary';
+  // Estados para mensajes
+  const [submitting, setSubmitting] = useState(false)
+  const [successMessage, setSuccessMessage] = useState('')
+
+  // Obtener token desde localStorage
+  const getToken = () => localStorage.getItem('authToken') || ''
+
+  // Encabezados con token
+  const getAuthHeaders = () => ({
+    'Content-Type': 'application/json',
+    'Authorization': `Bearer ${getToken()}`
+  })
+
+  // Fetch inventory desde API
+  useEffect(() => {
+    fetchInventory()
+  }, [])
+
+  const fetchInventory = async () => {
+    try {
+      setLoading(true)
+      const response = await fetch('http://localhost:3002/api/item', {
+        headers: getAuthHeaders()
+      })
+
+      if (!response.ok) {
+        throw new Error('Error al cargar el inventario')
+      }
+
+      const data = await response.json()
+      
+      // Mapear datos del backend al formato del frontend
+      setInventoryData(data.map(item => ({
+        ...item,
+        stock: item.quantity || item.stock,
+        minStock: item.minQuantity || item.minStock || 10,
+        status: calculateStatus(item.quantity, item.minQuantity || 10)
+      })))
+    } catch (err) {
+      setError(err.message)
+    } finally {
+      setLoading(false)
     }
   }
 
-  const updateStockStatus = (stock, minStock) => {
-    if (stock === 0) return 'Out of Stock';
-    if (stock < minStock * 0.25) return 'Critical';
-    if (stock < minStock) return 'Low Stock';
-    return 'In Stock';
+  // Funciones auxiliares
+  const getStatusColor = (status) => {
+    switch(status) {
+      case 'In Stock': return 'success'
+      case 'Low Stock': return 'warning'
+      case 'Critical': return 'danger'
+      case 'Out of Stock': return 'secondary'
+      default: return 'secondary'
+    }
+  }
+
+  const calculateStatus = (stock, minStock) => {
+    if (stock === 0) return 'Out of Stock'
+    if (stock < minStock * 0.25) return 'Critical'
+    if (stock < minStock) return 'Low Stock'
+    return 'In Stock'
+  }
+
+  // Operaciones CRUD
+  const handleCreateItem = async (itemData) => {
+    try {
+      const response = await fetch('http://localhost:3002/api/item', {
+        method: 'POST',
+        headers: getAuthHeaders(),
+        body: JSON.stringify({
+          name: itemData.item,
+          quantity: parseInt(itemData.stock),
+          minQuantity: parseInt(itemData.minStock)
+        })
+      })
+
+      if (!response.ok) {
+        if (response.status === 400) {
+          const data = await response.json()
+          throw new Error(data.errors?.[0]?.message || 'Datos inválidos')
+        }
+        throw new Error('Error al crear el ítem')
+      }
+
+      setSuccessMessage('Ítem creado exitosamente')
+      fetchInventory()
+    } catch (error) {
+      setError(error.message)
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
+  const handleUpdateItem = async (itemData) => {
+    try {
+      const response = await fetch(`http://localhost:3002/api/item/${itemData.id}`, {
+        method: 'PUT',
+        headers: getAuthHeaders(),
+        body: JSON.stringify({
+          name: itemData.item,
+          quantity: parseInt(itemData.stock),
+          minQuantity: parseInt(itemData.minStock)
+        })
+      })
+
+      if (!response.ok) {
+        if (response.status === 400) {
+          const data = await response.json()
+          throw new Error(data.errors?.[0]?.message || 'Datos inválidos')
+        }
+        throw new Error('Error al actualizar el ítem')
+      }
+
+      setSuccessMessage('Ítem actualizado exitosamente')
+      fetchInventory()
+    } catch (error) {
+      setError(error.message)
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
+  const handleDeleteItem = async (id) => {
+    if (!window.confirm('¿Estás seguro de eliminar este ítem?')) return
+
+    try {
+      const response = await fetch(`http://localhost:3002/api/item/${id}`, {
+        method: 'DELETE',
+        headers: getAuthHeaders()
+      })
+
+      if (!response.ok) throw new Error('Error al eliminar el ítem')
+      
+      setSuccessMessage('Ítem eliminado exitosamente')
+      fetchInventory()
+    } catch (error) {
+      setError(error.message)
+    }
   }
 
   const handleSave = () => {
     if (!currentItem.item.trim()) {
-      alert('El nombre del ítem es requerido');
-      return;
+      setError('El nombre del ítem es requerido')
+      return
     }
+
+    setSubmitting(true)
+    setSuccessMessage('')
+    setError('')
 
     const updatedItem = {
       ...currentItem,
-      stock: Number(currentItem.stock),
-      minStock: Number(currentItem.minStock),
-      status: updateStockStatus(currentItem.stock, currentItem.minStock)
-    };
-
-    setInventoryData(prev => {
-      if (currentItem.id) {
-        return prev.map(item => item.id === currentItem.id ? updatedItem : item);
-      }
-      return [...prev, { ...updatedItem, id: Math.max(...prev.map(i => i.id)) + 1 }];
-    });
-    
-    setShowModal(false);
-  };
-
-  const handleDelete = (id) => {
-    if (window.confirm('¿Estás seguro de eliminar este ítem?')) {
-      setInventoryData(prev => prev.filter(item => item.id !== id));
+      stock: parseInt(currentItem.stock),
+      minStock: parseInt(currentItem.minStock),
+      status: calculateStatus(currentItem.stock, currentItem.minStock)
     }
+
+    if (updatedItem.id) {
+      handleUpdateItem(updatedItem)
+    } else {
+      handleCreateItem(updatedItem)
+    }
+    
+    setShowModal(false)
+  }
+
+  // Renderizado
+  if (loading) {
+    return <CAlert color="info">Cargando inventario...</CAlert>
+  }
+
+  if (error) {
+    return <CAlert color="danger">{error}</CAlert>
   }
 
   return (
     <CCard className="mb-4">
       <CCardHeader className="d-flex justify-content-between align-items-center">
         <h5 className="mb-0">Gestión de Inventario</h5>
-        <CButton color="primary" size="sm" onClick={() => {
-          setCurrentItem({
-            id: null,
-            item: '',
-            stock: 0,
-            minStock: 0,
-            status: 'In Stock'
-          });
-          setShowModal(true);
-        }}>
+        <CButton 
+          color="primary" 
+          size="sm"
+          onClick={() => {
+            setCurrentItem({
+              id: null,
+              item: '',
+              stock: 0,
+              minStock: 10,
+              status: 'In Stock'
+            })
+            setError('')
+            setSuccessMessage('')
+            setShowModal(true)
+          }}
+        >
           <CIcon icon={cilPlus} className="me-2" />
           Nuevo Ítem
         </CButton>
@@ -120,10 +250,8 @@ const AdminInventory = () => {
             {inventoryData.map((item) => (
               <CTableRow key={item.id}>
                 <CTableDataCell>{item.id}</CTableDataCell>
-                <CTableDataCell>{item.item}</CTableDataCell>
-                <CTableDataCell>
-                  {item.stock}
-                </CTableDataCell>
+                <CTableDataCell>{item.name || item.item}</CTableDataCell>
+                <CTableDataCell>{item.stock}</CTableDataCell>
                 <CTableDataCell>
                   <CBadge color={getStatusColor(item.status)}>
                     {item.status}
@@ -135,8 +263,16 @@ const AdminInventory = () => {
                     size="sm" 
                     className="me-2"
                     onClick={() => {
-                      setCurrentItem(item);
-                      setShowModal(true);
+                      setCurrentItem({
+                        id: item.id,
+                        item: item.name || item.item,
+                        stock: item.stock,
+                        minStock: item.minStock || 10,
+                        status: item.status
+                      })
+                      setError('')
+                      setSuccessMessage('')
+                      setShowModal(true)
                     }}
                   >
                     <CIcon icon={cilPencil} />
@@ -144,7 +280,7 @@ const AdminInventory = () => {
                   <CButton 
                     color="danger" 
                     size="sm"
-                    onClick={() => handleDelete(item.id)}
+                    onClick={() => handleDeleteItem(item.id)}
                   >
                     <CIcon icon={cilTrash} />
                   </CButton>
@@ -162,6 +298,9 @@ const AdminInventory = () => {
             </CModalTitle>
           </CModalHeader>
           <CModalBody>
+            {error && <CAlert color="danger">{error}</CAlert>}
+            {successMessage && <CAlert color="success">{successMessage}</CAlert>}
+            
             <div className="mb-3">
               <CFormInput
                 label="Nombre del ítem"
@@ -172,6 +311,7 @@ const AdminInventory = () => {
                 }))}
               />
             </div>
+            
             <div className="row g-3">
               <div className="col-6">
                 <CFormInput
@@ -200,11 +340,19 @@ const AdminInventory = () => {
             </div>
           </CModalBody>
           <CModalFooter>
-            <CButton color="secondary" onClick={() => setShowModal(false)}>
+            <CButton 
+              color="secondary" 
+              onClick={() => setShowModal(false)}
+              disabled={submitting}
+            >
               Cancelar
             </CButton>
-            <CButton color="primary" onClick={handleSave}>
-              {currentItem.id ? 'Guardar Cambios' : 'Crear Ítem'}
+            <CButton 
+              color="primary" 
+              onClick={handleSave}
+              disabled={submitting}
+            >
+              {submitting ? 'Guardando...' : currentItem.id ? 'Guardar Cambios' : 'Crear Ítem'}
             </CButton>
           </CModalFooter>
         </CModal>
@@ -218,4 +366,4 @@ const AdminInventory = () => {
   )
 }
 
-export default AdminInventory;
+export default AdminInventory

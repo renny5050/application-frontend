@@ -1,28 +1,47 @@
 // src/components/ProtectedRoute.jsx
 import { useEffect, useState } from 'react';
 import { Navigate } from 'react-router-dom';
+// src/components/ProtectedRoute.jsx
+import { jwtDecode } from 'jwt-decode'; // Cambiado de import jwtDecode a { jwtDecode }
 
 const ProtectedRoute = ({ children, allowedRoles }) => {
   const [role, setRole] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchRole = async () => {
+    const getRoleFromToken = () => {
       try {
-        const res = await fetch('http://localhost:3001/users?id=1');
-        const data = await res.json();
-        setRole(data[0]?.role || null);
+        // 1. Obtener token de localStorage
+        const token = localStorage.getItem('authToken');
+        
+        if (!token) {
+          setLoading(false);
+          return;
+        }
+
+        // 2. Decodificar el token (sin verificar firma)
+        const decoded = jwtDecode(token);
+        
+        // 3. Verificar expiración
+        const currentTime = Date.now() / 1000;
+        if (decoded.exp < currentTime) {
+          localStorage.removeItem('authToken');
+          return;
+        }
+
+        setRole(decoded.role_id);
       } catch (error) {
-        setRole(null);
+        console.error('Error decodificando token:', error);
       } finally {
         setLoading(false);
       }
     };
-    fetchRole();
+
+    getRoleFromToken();
   }, []);
 
   if (loading) {
-    return null; // or a loading spinner
+    return <div>Cargando...</div>; // Mostrar spinner
   }
 
   if (!role) {

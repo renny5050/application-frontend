@@ -18,9 +18,15 @@ import CIcon from '@coreui/icons-react'
 import { cilLockLocked, cilUser } from '@coreui/icons'
 
 const Register = () => {
+  const [dni, setDni] = useState('')
+  const [firstName, setFirstName] = useState('')
+  const [lastName, setLastName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
+  const [isDniValid, setIsDniValid] = useState(true)
+  const [isFirstNameValid, setIsFirstNameValid] = useState(true)
+  const [isLastNameValid, setIsLastNameValid] = useState(true)
   const [isEmailValid, setIsEmailValid] = useState(true)
   const [isPasswordValid, setIsPasswordValid] = useState(true)
   const [isConfirmPasswordValid, setIsConfirmPasswordValid] = useState(true)
@@ -28,53 +34,52 @@ const Register = () => {
   const [error, setError] = useState(null)
   const [success, setSuccess] = useState(false)
 
+  const validateDni = (dni) => dni.length >= 8
+  const validateName = (name) => name.trim() !== ''
   const validateEmail = (email) => {
     if (!email) return false
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
     return emailRegex.test(email)
   }
-
   const validatePassword = (password) => password.length >= 6
-
   const validateConfirmPassword = (password, confirm) => password === confirm
 
   const handleSubmit = async (e) => {
     e.preventDefault()
 
-    // Dado que que CForm tiene la propiedad noValidate, 
-    // es necesario realizar una validación en el submit.
-
+    const dniValid = validateDni(dni)
+    const firstNameValid = validateName(firstName)
+    const lastNameValid = validateName(lastName)
     const emailValid = validateEmail(email)
     const passwordValid = validatePassword(password)
     const confirmPasswordValid = validateConfirmPassword(password, confirmPassword)
 
-    // Cambio de estado en la validación de los campos.
-
+    setIsDniValid(dniValid)
+    setIsFirstNameValid(firstNameValid)
+    setIsLastNameValid(lastNameValid)
     setIsEmailValid(emailValid)
     setIsPasswordValid(passwordValid)
     setIsConfirmPasswordValid(confirmPasswordValid)
 
-    // Verifica el estado antes de hacer el fetch.
-
-    if (emailValid && passwordValid && confirmPasswordValid) {
-
-      // Establece el estado de carga para usarse en el 
-      // mensaje de carga y botón de registro.
-
+    if (dniValid && firstNameValid && lastNameValid && emailValid && passwordValid && confirmPasswordValid) {
       setLoading(true)
       setError(null)
       setSuccess(false)
 
       try {
-        // Recuerda cambiar este  fetch en la versión final de programa.
-        const response = await fetch('http://localhost:3001/users', {
+        const response = await fetch('http://localhost:3002/api/users', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json'
           },
           body: JSON.stringify({
+            dni,
+            firstName,
+            lastName,
             email,
-            password
+            password,
+            role_id: 3,  // Establecer como estudiante por defecto
+            status: 'active'  // Establecer como activo por defecto
           })
         })
 
@@ -88,6 +93,9 @@ const Register = () => {
         console.log('Registro exitoso:', data)
 
         // Reiniciar campos
+        setDni('')
+        setFirstName('')
+        setLastName('')
         setEmail('')
         setPassword('')
         setConfirmPassword('')
@@ -107,13 +115,10 @@ const Register = () => {
           <CCol md={9} lg={7} xl={6}>
             <CCard className="mx-4">
               <CCardBody className="p-4">
-                {/*La propiedad noValidate está activa en el CForm para
-                 tener mensajes personalizados de validación. Ver el handleSubmit*/}
                 <CForm onSubmit={handleSubmit} noValidate>
-                  <h1>Register</h1>
-                  <p className="text-body-secondary">Create your account</p>
+                  <h1>Registro</h1>
+                  <p className="text-body-secondary">Crea tu cuenta</p>
 
-                  {/* Mensaje de carga */}
                   {loading && (
                     <div className="text-center my-3">
                       <CSpinner color="primary" />
@@ -121,24 +126,82 @@ const Register = () => {
                     </div>
                   )}
 
-                  {/* Mensaje de éxito */}
                   {success && (
                     <CAlert color="success" onClose={() => setSuccess(false)} dismissible>
                       ¡Registro exitoso! Revisa tu correo para confirmar la cuenta.
                     </CAlert>
                   )}
 
-                  {/* Mensaje de error */}
                   {error && (
                     <CAlert color="danger" onClose={() => setError(null)} dismissible>
                       {error}
                     </CAlert>
                   )}
 
-                    {/* Cada campo tiene en su método onChange una validación para
-                     llamar el CFormFeedback personalizado.*/}
-                    
-                    {/* Campo de email */}
+                  {/* Campo DNI */}
+                  <CInputGroup className="mb-3">
+                    <CInputGroupText>
+                      <CIcon icon={cilUser} />
+                    </CInputGroupText>
+                    <CFormInput
+                      type="text"
+                      placeholder="DNI"
+                      autoComplete="dni"
+                      value={dni}
+                      onChange={(e) => {
+                        setDni(e.target.value)
+                        setIsDniValid(validateDni(e.target.value))
+                      }}
+                      invalid={!isDniValid}
+                    />
+                    <CFormFeedback invalid>
+                      El DNI debe tener al menos 8 caracteres
+                    </CFormFeedback>
+                  </CInputGroup>
+
+                  {/* Campo Primer Nombre */}
+                  <CInputGroup className="mb-3">
+                    <CInputGroupText>
+                      <CIcon icon={cilUser} />
+                    </CInputGroupText>
+                    <CFormInput
+                      type="text"
+                      placeholder="Primer Nombre"
+                      autoComplete="given-name"
+                      value={firstName}
+                      onChange={(e) => {
+                        setFirstName(e.target.value)
+                        setIsFirstNameValid(validateName(e.target.value))
+                      }}
+                      invalid={!isFirstNameValid}
+                    />
+                    <CFormFeedback invalid>
+                      Por favor ingrese su primer nombre
+                    </CFormFeedback>
+                  </CInputGroup>
+
+                  {/* Campo Apellido */}
+                  <CInputGroup className="mb-3">
+                    <CInputGroupText>
+                      <CIcon icon={cilUser} />
+                    </CInputGroupText>
+                    <CFormInput
+                      type="text"
+                      placeholder="Apellido"
+                      autoComplete="family-name"
+                      value={lastName}
+                      onChange={(e) => {
+                        setLastName(e.target.value)
+                        setIsLastNameValid(validateName(e.target.value))
+                      }}
+                      invalid={!isLastNameValid}
+                    />
+                    <CFormFeedback invalid>
+                      Por favor ingrese su apellido
+                    </CFormFeedback>
+                  </CInputGroup>
+
+                  {/* Campo Email */}
                   <CInputGroup className="mb-3">
                     <CInputGroupText>@</CInputGroupText>
                     <CFormInput
@@ -156,15 +219,15 @@ const Register = () => {
                       Por favor ingrese un correo electrónico válido
                     </CFormFeedback>
                   </CInputGroup>
-                  
-                  {/* Campo de contraseña */}
+
+                  {/* Campo Contraseña */}
                   <CInputGroup className="mb-3">
                     <CInputGroupText>
                       <CIcon icon={cilLockLocked} />
                     </CInputGroupText>
                     <CFormInput
                       type="password"
-                      placeholder="Password"
+                      placeholder="Contraseña"
                       autoComplete="new-password"
                       value={password}
                       onChange={(e) => {
@@ -177,15 +240,15 @@ const Register = () => {
                       La contraseña debe tener al menos 6 caracteres
                     </CFormFeedback>
                   </CInputGroup>
-                  
-                  {/* Campo de confirmar contraseña */}
+
+                  {/* Campo Confirmar Contraseña */}
                   <CInputGroup className="mb-4">
                     <CInputGroupText>
                       <CIcon icon={cilLockLocked} />
                     </CInputGroupText>
                     <CFormInput
                       type="password"
-                      placeholder="Repeat password"
+                      placeholder="Repetir Contraseña"
                       autoComplete="new-password"
                       value={confirmPassword}
                       onChange={(e) => {
@@ -198,15 +261,14 @@ const Register = () => {
                       Las contraseñas no coinciden
                     </CFormFeedback>
                   </CInputGroup>
-                  
-                  {/* Botón de registro */}
+
                   <div className="d-grid">
                     <CButton color="success" type="submit" disabled={loading}>
                       {loading ? (
                         <>
                           <CSpinner size="sm" /> Registrando...
                         </>
-                      ) : 'Create Account'}
+                      ) : 'Crear Cuenta'}
                     </CButton>
                   </div>
                 </CForm>

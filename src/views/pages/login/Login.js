@@ -12,16 +12,21 @@ import {
   CInputGroup,
   CInputGroupText,
   CRow,
-  CFormFeedback
+  CFormFeedback,
+  CSpinner
 } from '@coreui/react'
 import CIcon from '@coreui/icons-react'
 import { cilLockLocked, cilUser } from '@coreui/icons'
+// src/components/ProtectedRoute.jsx
+import { jwtDecode } from 'jwt-decode'; // Cambiado de import jwtDecode a { jwtDecode }
 
 const Login = () => {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [isEmailValid, setIsEmailValid] = useState(true)
-  const navigate = useNavigate();
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState('')
+  const navigate = useNavigate()
 
   const validateEmail = (email) => {
     if (!email) return false
@@ -31,28 +36,55 @@ const Login = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault()
+    setError('')
     
     const isValid = validateEmail(email)
     setIsEmailValid(isValid)
     
-    if (isValid) {
-      // Aquí iría la lógica de login
+    if (!isValid) {
+      return
+    }
 
-      try{
-        const res = await fetch('http://localhost:3001/users?id=1');
+    setLoading(true)
+    
+    try {
+      // Realizar petición al endpoint de login
+      const response = await fetch('http://localhost:3002/api/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ email, password })
+      })
 
-        const data = await res.json();
-
-        const role = data[0].role;
-
-        navigate(`/dashboard/${role}`);
-
+      const data = await response.json()
+      
+      if (!response.ok) {
+        throw new Error(data.error || 'Error de autenticación')
       }
-      catch{
-        alert('Error de login');
-      }
-      console.log('Email válido:', email)
-      console.log('Password:', password)
+
+      // Guardar token en localStorage
+      localStorage.setItem('authToken', data.token)
+      
+      const roleMap = {
+      1: 'admin',
+      2: 'teacher',
+      3: 'student'
+    };
+
+      // Decodificar token para obtener el rol
+      const decoded = jwtDecode(data.token)
+      const roleId = roleMap[decoded.role_id]
+
+      console.log('Decoded token:', decoded)
+
+      // Redirigir al dashboard con el role_id en la ruta
+      navigate(`/dashboard/${roleId}`)
+    } catch (error) {
+      setError(error.message || 'Error de inicio de sesión. Verifica tus credenciales.')
+      console.error('Login error:', error)
+    } finally {
+      setLoading(false)
     }
   }
 
@@ -68,6 +100,13 @@ const Login = () => {
                     <h1>Login</h1>
                     <p className="text-body-secondary">Sign In to your account</p>
                     
+                    {/* Mensaje de error */}
+                    {error && (
+                      <div className="alert alert-danger" role="alert">
+                        {error}
+                      </div>
+                    )}
+                    
                     {/* Campo de email con validación */}
                     <CInputGroup className="mb-3">
                       <CInputGroupText>
@@ -81,6 +120,7 @@ const Login = () => {
                         onChange={(e) => {
                           setEmail(e.target.value)
                           setIsEmailValid(validateEmail(e.target.value))
+                          setError('')
                         }}
                         invalid={!isEmailValid}
                       />
@@ -99,15 +139,28 @@ const Login = () => {
                         placeholder="Password"
                         autoComplete="current-password"
                         value={password}
-                        onChange={(e) => setPassword(e.target.value)}
+                        onChange={(e) => {
+                          setPassword(e.target.value)
+                          setError('')
+                        }}
                       />
                     </CInputGroup>
 
                     {/* Botones */}
                     <CRow>
                       <CCol xs={6}>
-                        <CButton color="primary" className="px-4" type="submit">
-                          Login
+                        <CButton 
+                          color="primary" 
+                          className="px-4" 
+                          type="submit"
+                          disabled={loading}
+                        >
+                          {loading ? (
+                            <>
+                              <CSpinner component="span" size="sm" aria-hidden="true" />
+                              <span className="ms-2">Cargando...</span>
+                            </>
+                          ) : 'Login'}
                         </CButton>
                       </CCol>
                       <CCol xs={6} className="text-right">
@@ -135,10 +188,16 @@ const Login = () => {
                       sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
                     </p>
                     
-                      <CButton color="primary" className="mt-3" active tabIndex={-1} as={Link} to="/register">
-                        Register Now!
-                      </CButton>
-                    
+                    <CButton 
+                      color="primary" 
+                      className="mt-3" 
+                      active 
+                      tabIndex={-1} 
+                      as={Link} 
+                      to="/register"
+                    >
+                      Register Now!
+                    </CButton>
                   </div>
                 </CCardBody>
               </CCard>

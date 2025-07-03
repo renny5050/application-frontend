@@ -9,6 +9,9 @@ import DocsLink from './DocsLink'
 import DocsExample from './DocsExample'
 import AdminContent from './AdminContent'
 import AdminSidebar from './AdminSidebar'
+// Importar el componente TeacherSidebar
+import TeacherSidebar from './TeacherSidebar'
+import TeacherContent from './TeacherContent'
 
 export {
   AppContent,
@@ -21,5 +24,7 @@ export {
   DocsLink,
   DocsExample,
   AdminContent,
-  AdminSidebar
+  AdminSidebar,
+  TeacherSidebar,
+  TeacherContent
 }

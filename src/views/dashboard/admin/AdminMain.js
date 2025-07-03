@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState, useEffect } from 'react'
 import {
   CRow,
   CCol,
@@ -7,10 +7,7 @@ import {
   CCardHeader,
   CWidgetStatsB,
   CProgress,
-  CListGroup,
-  CListGroupItem,
-  CAlert,
-  CBadge
+  CAlert
 } from '@coreui/react'
 import CIcon from '@coreui/icons-react'
 import {
@@ -22,19 +19,58 @@ import {
 } from '@coreui/icons'
 
 const AdminMain = () => {
-  // Datos de ejemplo para la escuela de música
-  const musicStats = {
-    totalStudents: 142,
-    activeTeachers: 18,
-    ongoingCourses: 23,
-    availableInstruments: 56
+  // Estados para métricas
+  const [totalStudents, setTotalStudents] = useState(0)
+  const [activeTeachers, setActiveTeachers] = useState(0)
+  const [ongoingCourses, setOngoingCourses] = useState(0)
+  const [availableInstruments, setAvailableInstruments] = useState(0)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
+
+  // Obtener token desde localStorage
+  const getToken = () => localStorage.getItem('authToken') || ''
+
+  // Encabezados con token
+  const getAuthHeaders = () => ({
+    'Content-Type': 'application/json',
+    'Authorization': `Bearer ${getToken()}`
+  })
+
+  // Cargar datos desde APIs
+  useEffect(() => {
+    fetchData()
+  }, [])
+
+  const fetchData = async () => {
+    try {
+      const [classesRes, teachersRes, studentsRes, itemsRes] = await Promise.all([
+        fetch('http://localhost:3002/api/classes', { headers: getAuthHeaders() }),
+        fetch('http://localhost:3002/api/teachers', { headers: getAuthHeaders() }),
+        fetch('http://localhost:3002/api/students', { headers: getAuthHeaders() }),
+        fetch('http://localhost:3002/api/item', { headers: getAuthHeaders() })
+      ])
+
+      const [classes, teachers, students, items] = await Promise.all([
+        classesRes.json(),
+        teachersRes.json(),
+        studentsRes.json(),
+        itemsRes.json()
+      ])
+
+      setOngoingCourses(classes.length)
+      setActiveTeachers(teachers.length)
+      setTotalStudents(students.length)
+      setAvailableInstruments(items.length)
+    } catch (err) {
+      setError('No se pudieron cargar las métricas. Recarga la página.')
+    } finally {
+      setLoading(false)
+    }
   }
 
-  const recentActivities = [
-    { type: 'student', text: 'Nuevo estudiante registrado: María Gómez (Piano)', time: 'Hace 15 min' },
-    { type: 'teacher', text: 'Clase cancelada: Guitarra Clásica - Prof. Rodríguez', time: 'Hace 2 horas' },
-    { type: 'instrument', text: 'Nuevo piano Yamaha agregado al inventario', time: 'Ayer' }
-  ]
+  if (error) {
+    return <CAlert color="danger">{error}</CAlert>
+  }
 
   return (
     <div className="admin-main-music">
@@ -42,20 +78,24 @@ const AdminMain = () => {
         <CCardHeader className="d-flex justify-content-between align-items-center">
           <div>
             <h4 className="mb-0">Escuela de Música Harmonia</h4>
-            <small className="text-medium-emphasis">Panel de Administración - {new Date().toLocaleDateString()}</small>
+            <small className="text-medium-emphasis">
+              Panel de Administración - {new Date().toLocaleDateString()}
+            </small>
           </div>
         </CCardHeader>
-        
+
         <CCardBody>
-          {/* Sección de Métricas */}
+          {/* Métricas */}
           <CRow className="g-4 mb-4">
             <CCol xs={12} sm={6} xl={3}>
               <CWidgetStatsB
                 color="primary"
                 icon={<CIcon icon={cilUser} height={36} />}
                 title="Estudiantes"
-                value={musicStats.totalStudents.toString()}
-                progress={<CProgress height={4} value={75} color="primary" className="mt-2" />}
+                value={loading ? 'Cargando...' : totalStudents.toString()}
+                progress={
+                  <CProgress height={4} value={75} color="primary" className="mt-2" />
+                }
               />
             </CCol>
 
@@ -64,8 +104,10 @@ const AdminMain = () => {
                 color="warning"
                 icon={<CIcon icon={cilEducation} height={36} />}
                 title="Profesores"
-                value={musicStats.activeTeachers.toString()}
-                progress={<CProgress height={4} value={90} color="warning" className="mt-2" />}
+                value={loading ? 'Cargando...' : activeTeachers.toString()}
+                progress={
+                  <CProgress height={4} value={90} color="warning" className="mt-2" />
+                }
               />
             </CCol>
 
@@ -74,8 +116,10 @@ const AdminMain = () => {
                 color="success"
                 icon={<CIcon icon={cilLibrary} height={36} />}
                 title="Cursos Activos"
-                value={musicStats.ongoingCourses.toString()}
-                progress={<CProgress height={4} value={60} color="success" className="mt-2" />}
+                value={loading ? 'Cargando...' : ongoingCourses.toString()}
+                progress={
+                  <CProgress height={4} value={60} color="success" className="mt-2" />
+                }
               />
             </CCol>
 
@@ -84,47 +128,25 @@ const AdminMain = () => {
                 color="info"
                 icon={<CIcon icon={cilMusicNote} height={36} />}
                 title="Instrumentos"
-                value={musicStats.availableInstruments.toString()}
-                progress={<CProgress height={4} value={45} color="info" className="mt-2" />}
+                value={loading ? 'Cargando...' : availableInstruments.toString()}
+                progress={
+                  <CProgress height={4} value={45} color="info" className="mt-2" />
+                }
               />
             </CCol>
           </CRow>
 
-          {/* Contenido Principal */}
+          {/* Mensaje informativo */}
           <CRow>
             <CCol md={12}>
-              <CCard className="mb-4">
-                <CCardHeader>
-                  <CIcon icon={cilChartLine} className="me-2" />
-                  Actividad Reciente
-                </CCardHeader>
-                <CCardBody>
-                  <CListGroup>
-                    {recentActivities.map((activity, index) => (
-                      <CListGroupItem key={index} className="d-flex justify-content-between align-items-center">
-                        <div>
-                          <CBadge color="primary" className="me-2">
-                            {activity.type === 'student' && 'Estudiante'}
-                            {activity.type === 'teacher' && 'Profesor'}
-                            {activity.type === 'instrument' && 'Instrumento'}
-                          </CBadge>
-                          {activity.text}
-                        </div>
-                        <small className="text-medium-emphasis">{activity.time}</small>
-                      </CListGroupItem>
-                    ))}
-                  </CListGroup>
-                </CCardBody>
-              </CCard>
+              <CAlert color="info" className="mb-0">
+                <CIcon icon={cilChartLine} className="me-2" />
+                Bienvenido al panel de administración de la escuela de música. Puedes ver tus estadísticas principales arriba.
+              </CAlert>
             </CCol>
           </CRow>
         </CCardBody>
       </CCard>
-
-      <CAlert color="info">
-        <CIcon icon={cilMusicNote} className="me-2" />
-        Bienvenido al panel de administración de la escuela de música. Recuerda actualizar los horarios de práctica regularmente.
-      </CAlert>
     </div>
   )
 }
