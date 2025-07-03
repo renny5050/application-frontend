@@ -13,12 +13,11 @@ import {
   CInputGroupText,
   CRow,
   CFormFeedback,
-  CSpinner
+  CSpinner,
 } from '@coreui/react'
 import CIcon from '@coreui/icons-react'
 import { cilLockLocked, cilUser } from '@coreui/icons'
-// src/components/ProtectedRoute.jsx
-import { jwtDecode } from 'jwt-decode'; // Cambiado de import jwtDecode a { jwtDecode }
+import { jwtDecode } from 'jwt-decode'
 
 const Login = () => {
   const [email, setEmail] = useState('')
@@ -37,48 +36,43 @@ const Login = () => {
   const handleSubmit = async (e) => {
     e.preventDefault()
     setError('')
-    
+
     const isValid = validateEmail(email)
     setIsEmailValid(isValid)
-    
+
     if (!isValid) {
       return
     }
 
     setLoading(true)
-    
+
     try {
-      // Realizar petición al endpoint de login
       const response = await fetch('https://application-backend-4anj.onrender.com/api/auth/login', {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ email, password })
+        body: JSON.stringify({ email, password }),
       })
 
       const data = await response.json()
-      
+
       if (!response.ok) {
         throw new Error(data.error || 'Error de autenticación')
       }
 
-      // Guardar token en localStorage
       localStorage.setItem('authToken', data.token)
-      
-      const roleMap = {
-      1: 'admin',
-      2: 'teacher',
-      3: 'student'
-    };
 
-      // Decodificar token para obtener el rol
+      const roleMap = {
+        1: 'admin',
+        2: 'teacher',
+        3: 'student',
+      }
+
       const decoded = jwtDecode(data.token)
       const roleId = roleMap[decoded.role_id]
 
       console.log('Decoded token:', decoded)
-
-      // Redirigir al dashboard con el role_id en la ruta
       navigate(`/dashboard/${roleId}`)
     } catch (error) {
       setError(error.message || 'Error de inicio de sesión. Verifica tus credenciales.')
@@ -97,16 +91,16 @@ const Login = () => {
               <CCard className="p-4">
                 <CCardBody>
                   <CForm onSubmit={handleSubmit} noValidate>
-                    <h1>Login</h1>
-                    <p className="text-body-secondary">Sign In to your account</p>
-                    
+                    <h1>Iniciar Sesión</h1>
+                    <p className="text-body-secondary">Ingresa con tu cuenta para continuar</p>
+
                     {/* Mensaje de error */}
                     {error && (
                       <div className="alert alert-danger" role="alert">
                         {error}
                       </div>
                     )}
-                    
+
                     {/* Campo de email con validación */}
                     <CInputGroup className="mb-3">
                       <CInputGroupText>
@@ -114,7 +108,7 @@ const Login = () => {
                       </CInputGroupText>
                       <CFormInput
                         type="email"
-                        placeholder="Email"
+                        placeholder="Correo Electrónico"
                         autoComplete="email"
                         value={email}
                         onChange={(e) => {
@@ -124,11 +118,9 @@ const Login = () => {
                         }}
                         invalid={!isEmailValid}
                       />
-                      <CFormFeedback invalid>
-                        Por favor ingrese un correo electrónico válido
-                      </CFormFeedback>
+                      <CFormFeedback invalid>Por favor ingrese un correo electrónico válido</CFormFeedback>
                     </CInputGroup>
-                    
+
                     {/* Campo de contraseña */}
                     <CInputGroup className="mb-4">
                       <CInputGroupText>
@@ -136,7 +128,7 @@ const Login = () => {
                       </CInputGroupText>
                       <CFormInput
                         type="password"
-                        placeholder="Password"
+                        placeholder="Contraseña"
                         autoComplete="current-password"
                         value={password}
                         onChange={(e) => {
@@ -149,54 +141,51 @@ const Login = () => {
                     {/* Botones */}
                     <CRow>
                       <CCol xs={6}>
-                        <CButton 
-                          color="primary" 
-                          className="px-4" 
-                          type="submit"
-                          disabled={loading}
-                        >
+                        <CButton color="primary" className="px-4" type="submit" disabled={loading}>
                           {loading ? (
                             <>
                               <CSpinner component="span" size="sm" aria-hidden="true" />
-                              <span className="ms-2">Cargando...</span>
+                              <span className="ms-2">Ingresando...</span>
                             </>
-                          ) : 'Login'}
+                          ) : (
+                            'Ingresar'
+                          )}
                         </CButton>
                       </CCol>
                       <CCol xs={6} className="text-right">
-                        <CButton 
-                          color="link" 
-                          className="px-0" 
-                          as={Link} 
+                        <CButton
+                          color="link"
+                          className="px-0"
+                          as={Link}
                           to="/forgot-password"
                         >
-                          Forgot password?
+                          ¿Olvidaste tu contraseña?
                         </CButton>
                       </CCol>
                     </CRow>
                   </CForm>
                 </CCardBody>
               </CCard>
-              
+
               {/* Tarjeta lateral */}
               <CCard className="text-white bg-primary py-5" style={{ width: '44%' }}>
                 <CCardBody className="text-center">
                   <div>
-                    <h2>Sign up</h2>
+                    <h2>¿Aún sin cuenta?</h2>
                     <p>
-                      Lorem ipsum dolor sit amet, consectetur adipisicing elit, 
-                      sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
+                      Únete a nuestra plataforma hoy mismo. El proceso de registro es rápido, sencillo y abre
+                      un mundo de posibilidades.
                     </p>
-                    
-                    <CButton 
-                      color="primary" 
-                      className="mt-3" 
-                      active 
-                      tabIndex={-1} 
-                      as={Link} 
+
+                    <CButton
+                      color="primary"
+                      className="mt-3"
+                      active
+                      tabIndex={-1}
+                      as={Link}
                       to="/register"
                     >
-                      Register Now!
+                      ¡Regístrate Ahora!
                     </CButton>
                   </div>
                 </CCardBody>
