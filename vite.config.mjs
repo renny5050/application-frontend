@@ -5,7 +5,7 @@ import autoprefixer from 'autoprefixer'
 
 export default defineConfig(() => {
   return {
-    base: './',
+    base: process.env.VITE_BASE_URL || '/application-frontend',
     build: {
       outDir: 'build',
     },
