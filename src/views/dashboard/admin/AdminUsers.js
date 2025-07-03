@@ -100,7 +100,7 @@ const UserManagement = () => {
       const token = localStorage.getItem('authToken')
       if (!token) throw new Error('No se encontró token de autenticación')
 
-      const response = await fetch(`http://localhost:3002/api/specialties/${specialtyId}`, {
+      const response = await fetch(`https://application-backend-4anj.onrender.com/api/specialties/${specialtyId}`, {
         headers: { 'Authorization': `Bearer ${token}` }
       })
 
@@ -123,7 +123,7 @@ const UserManagement = () => {
       const token = localStorage.getItem('authToken')
       if (!token) throw new Error('No se encontró token de autenticación')
 
-      const response = await fetch('http://localhost:3002/api/users', {
+      const response = await fetch('https://application-backend-4anj.onrender.com/api/users', {
         headers: { 'Authorization': `Bearer ${token}` }
       })
 
@@ -173,7 +173,7 @@ const UserManagement = () => {
       const token = localStorage.getItem('authToken')
       if (!token) throw new Error('No se encontró token de autenticación')
 
-      const response = await fetch('http://localhost:3002/api/classes', {
+      const response = await fetch('https://application-backend-4anj.onrender.com/api/classes', {
         headers: { 'Authorization': `Bearer ${token}` }
       })
 
@@ -198,7 +198,7 @@ const UserManagement = () => {
       const token = localStorage.getItem('authToken')
       if (!token) throw new Error('No se encontró token de autenticación')
 
-      const response = await fetch('http://localhost:3002/api/specialties', {
+      const response = await fetch('https://application-backend-4anj.onrender.com/api/specialties', {
         headers: { 'Authorization': `Bearer ${token}` }
       })
 
@@ -232,7 +232,7 @@ const UserManagement = () => {
       const token = localStorage.getItem('authToken')
       if (!token) throw new Error('No se encontró token de autenticación')
 
-      const response = await fetch('http://localhost:3002/api/users', {
+      const response = await fetch('https://application-backend-4anj.onrender.com/api/users', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -299,7 +299,7 @@ const UserManagement = () => {
       const token = localStorage.getItem('authToken')
       if (!token) throw new Error('No se encontró token de autenticación')
 
-      const response = await fetch(`http://localhost:3002/api/users/${selectedUser.id}`, {
+      const response = await fetch(`https://application-backend-4anj.onrender.com/api/users/${selectedUser.id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -351,7 +351,7 @@ const UserManagement = () => {
       const token = localStorage.getItem('authToken')
       if (!token) throw new Error('No se encontró token de autenticación')
 
-      const response = await fetch(`http://localhost:3002/api/users/${userId}`, {
+      const response = await fetch(`https://application-backend-4anj.onrender.com/api/users/${userId}`, {
         method: 'DELETE',
         headers: { 'Authorization': `Bearer ${token}` }
       })

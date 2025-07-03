@@ -115,7 +115,7 @@ const AttendanceCRUD = () => {
       // Primero, obtenemos la lista de estudiantes de esa clase para poder mostrar sus nombres
       await fetchStudentsByClass(classId);
 
-      const response = await fetch(`http://localhost:3002/api/attendance/class/${classId}`, {
+      const response = await fetch(`https://application-backend-4anj.onrender.com/api/attendance/class/${classId}`, {
         headers: getAuthHeaders()
       });
 
@@ -141,7 +141,7 @@ const AttendanceCRUD = () => {
         throw new Error('No se pudo obtener el ID del profesor');
       }
 
-      const response = await fetch(`http://localhost:3002/api/classes/teacher/${decoded.id}`, {
+      const response = await fetch(`https://application-backend-4anj.onrender.com/api/classes/teacher/${decoded.id}`, {
         headers: getAuthHeaders()
       });
 
@@ -164,7 +164,7 @@ const AttendanceCRUD = () => {
     }
 
     try {
-      const response = await fetch(`http://localhost:3002/api/studentclass/class/${classId}`, {
+      const response = await fetch(`https://application-backend-4anj.onrender.com/api/studentclass/class/${classId}`, {
         headers: getAuthHeaders()
       });
 
@@ -227,8 +227,8 @@ const AttendanceCRUD = () => {
       const attendanceData = { ...currentAttendance, date: formattedDate };
 
       const url = isEditing
-        ? `http://localhost:3002/api/attendance/${currentAttendance.id}`
-        : 'http://localhost:3002/api/attendance';
+        ? `https://application-backend-4anj.onrender.com/api/attendance/${currentAttendance.id}`
+        : 'https://application-backend-4anj.onrender.com/api/attendance';
       const method = isEditing ? 'PUT' : 'POST';
 
       const response = await fetch(url, {
@@ -258,7 +258,7 @@ const AttendanceCRUD = () => {
     if (!window.confirm('¿Estás seguro de eliminar este registro de asistencia?')) return;
 
     try {
-      const response = await fetch(`http://localhost:3002/api/attendance/${id}`, {
+      const response = await fetch(`https://application-backend-4anj.onrender.com/api/attendance/${id}`, {
         method: 'DELETE',
         headers: getAuthHeaders()
       });

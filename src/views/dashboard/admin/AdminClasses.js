@@ -63,10 +63,10 @@ const AdminClasses = () => {
     try {
       setLoading(true)
       const [classesResponse, teachersResponse] = await Promise.all([
-        fetch('http://localhost:3002/api/classes/', {
+        fetch('https://application-backend-4anj.onrender.com/api/classes/', {
           headers: getAuthHeaders()
         }),
-        fetch('http://localhost:3002/api/teachers/', {
+        fetch('https://application-backend-4anj.onrender.com/api/teachers/', {
           headers: getAuthHeaders()
         })
       ])
@@ -104,7 +104,7 @@ const AdminClasses = () => {
 
   const handleSave = async () => {
     try {
-      const response = await fetch(`http://localhost:3002/api/classes/${currentClass.id}`, {
+      const response = await fetch(`https://application-backend-4anj.onrender.com/api/classes/${currentClass.id}`, {
         method: 'PUT',
         headers: getAuthHeaders(),
         body: JSON.stringify({
@@ -133,7 +133,7 @@ const AdminClasses = () => {
   const handleDelete = async (id) => {
     if (window.confirm('¿Estás seguro de eliminar esta clase?')) {
       try {
-        const response = await fetch(`http://localhost:3002/api/classes/${id}`, {
+        const response = await fetch(`https://application-backend-4anj.onrender.com/api/classes/${id}`, {
           method: 'DELETE',
           headers: getAuthHeaders()
         })

@@ -55,7 +55,7 @@ const AdminCreateClass = ({ onSuccess }) => {
   useEffect(() => {
     const fetchSpecialties = async () => {
       try {
-        const response = await fetch('http://localhost:3002/api/specialties', {
+        const response = await fetch('https://application-backend-4anj.onrender.com/api/specialties', {
           method: 'GET',
           headers: getAuthHeaders()
         })
@@ -75,7 +75,7 @@ const AdminCreateClass = ({ onSuccess }) => {
 
     const fetchTeachers = async () => {
       try {
-        const response = await fetch('http://localhost:3002/api/teachers', {
+        const response = await fetch('https://application-backend-4anj.onrender.com/api/teachers', {
           method: 'GET',
           headers: getAuthHeaders()
         })
@@ -140,7 +140,7 @@ const AdminCreateClass = ({ onSuccess }) => {
     setApiError('')
 
     try {
-      const response = await fetch('http://localhost:3002/api/classes', {
+      const response = await fetch('https://application-backend-4anj.onrender.com/api/classes', {
         method: 'POST',
         headers: getAuthHeaders(),
         body: JSON.stringify({

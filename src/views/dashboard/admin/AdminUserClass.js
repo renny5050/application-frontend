@@ -58,7 +58,7 @@ const AdminUserClass = ({ user, classes, loading }) => {
         throw new Error('No se encontró token de autenticación');
       }
 
-      const endpoint = `http://localhost:3002/api/studentclass/student/${userId}`;
+      const endpoint = `https://application-backend-4anj.onrender.com/api/studentclass/student/${userId}`;
 
       const response = await fetch(endpoint, {
         headers: {
@@ -118,7 +118,7 @@ const AdminUserClass = ({ user, classes, loading }) => {
         throw new Error('No se encontró token de autenticación');
       }
 
-      const response = await fetch('http://localhost:3002/api/studentclass', {
+      const response = await fetch('https://application-backend-4anj.onrender.com/api/studentclass', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -161,7 +161,7 @@ const AdminUserClass = ({ user, classes, loading }) => {
         throw new Error('No se encontró token de autenticación');
       }
 
-      const response = await fetch('http://localhost:3002/api/studentclass', {
+      const response = await fetch('https://application-backend-4anj.onrender.com/api/studentclass', {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',

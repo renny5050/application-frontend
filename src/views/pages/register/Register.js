@@ -67,7 +67,7 @@ const Register = () => {
       setSuccess(false)
 
       try {
-        const response = await fetch('http://localhost:3002/api/users', {
+        const response = await fetch('https://application-backend-4anj.onrender.com/api/users', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json'

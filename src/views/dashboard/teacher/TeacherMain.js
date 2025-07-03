@@ -54,7 +54,7 @@ const TeacherMain = () => {
   // Obtener número de estudiantes por clase
   const fetchStudentCountForClass = async (classId) => {
     try {
-      const response = await fetch(`http://localhost:3002/api/studentclass/class/${classId}`, {
+      const response = await fetch(`https://application-backend-4anj.onrender.com/api/studentclass/class/${classId}`, {
         headers: getAuthHeaders()
       })
 
@@ -81,7 +81,7 @@ const TeacherMain = () => {
       setError(null)
 
       // 1. Obtener clases del profesor
-      const classesResponse = await fetch(`http://localhost:3002/api/classes/teacher/${decoded.id}`, {
+      const classesResponse = await fetch(`https://application-backend-4anj.onrender.com/api/classes/teacher/${decoded.id}`, {
         headers: getAuthHeaders()
       })
 

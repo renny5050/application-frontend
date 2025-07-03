@@ -49,7 +49,7 @@ const Login = () => {
     
     try {
       // Realizar petición al endpoint de login
-      const response = await fetch('http://localhost:3002/api/auth/login', {
+      const response = await fetch('https://application-backend-4anj.onrender.com/api/auth/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'

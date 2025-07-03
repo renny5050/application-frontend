@@ -44,10 +44,10 @@ const AdminMain = () => {
   const fetchData = async () => {
     try {
       const [classesRes, teachersRes, studentsRes, itemsRes] = await Promise.all([
-        fetch('http://localhost:3002/api/classes', { headers: getAuthHeaders() }),
-        fetch('http://localhost:3002/api/teachers', { headers: getAuthHeaders() }),
-        fetch('http://localhost:3002/api/students', { headers: getAuthHeaders() }),
-        fetch('http://localhost:3002/api/item', { headers: getAuthHeaders() })
+        fetch('https://application-backend-4anj.onrender.com/api/classes', { headers: getAuthHeaders() }),
+        fetch('https://application-backend-4anj.onrender.com/api/teachers', { headers: getAuthHeaders() }),
+        fetch('https://application-backend-4anj.onrender.com/api/students', { headers: getAuthHeaders() }),
+        fetch('https://application-backend-4anj.onrender.com/api/item', { headers: getAuthHeaders() })
       ])
 
       const [classes, teachers, students, items] = await Promise.all([

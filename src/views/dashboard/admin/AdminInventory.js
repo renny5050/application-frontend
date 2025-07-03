@@ -56,7 +56,7 @@ const AdminInventory = () => {
   const fetchInventory = async () => {
     try {
       setLoading(true)
-      const response = await fetch('http://localhost:3002/api/item', {
+      const response = await fetch('https://application-backend-4anj.onrender.com/api/item', {
         headers: getAuthHeaders()
       })
 
@@ -101,7 +101,7 @@ const AdminInventory = () => {
   // Operaciones CRUD
   const handleCreateItem = async (itemData) => {
     try {
-      const response = await fetch('http://localhost:3002/api/item', {
+      const response = await fetch('https://application-backend-4anj.onrender.com/api/item', {
         method: 'POST',
         headers: getAuthHeaders(),
         body: JSON.stringify({
@@ -130,7 +130,7 @@ const AdminInventory = () => {
 
   const handleUpdateItem = async (itemData) => {
     try {
-      const response = await fetch(`http://localhost:3002/api/item/${itemData.id}`, {
+      const response = await fetch(`https://application-backend-4anj.onrender.com/api/item/${itemData.id}`, {
         method: 'PUT',
         headers: getAuthHeaders(),
         body: JSON.stringify({
@@ -161,7 +161,7 @@ const AdminInventory = () => {
     if (!window.confirm('¿Estás seguro de eliminar este ítem?')) return
 
     try {
-      const response = await fetch(`http://localhost:3002/api/item/${id}`, {
+      const response = await fetch(`https://application-backend-4anj.onrender.com/api/item/${id}`, {
         method: 'DELETE',
         headers: getAuthHeaders()
       })

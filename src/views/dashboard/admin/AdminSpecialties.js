@@ -102,7 +102,7 @@ const AdminSpecialties = () => {
     setLoading(true);
     setError('');
     try {
-      const response = await fetch('http://localhost:3002/api/specialties', {
+      const response = await fetch('https://application-backend-4anj.onrender.com/api/specialties', {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -131,7 +131,7 @@ const AdminSpecialties = () => {
     setActionLoading(true);
     setError('');
     try {
-      const response = await fetch('http://localhost:3002/api/specialties', {
+      const response = await fetch('https://application-backend-4anj.onrender.com/api/specialties', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -162,7 +162,7 @@ const AdminSpecialties = () => {
     setActionLoading(true);
     setError('');
     try {
-      const response = await fetch(`http://localhost:3002/api/specialties/${editingSpecialty.id}`, {
+      const response = await fetch(`https://application-backend-4anj.onrender.com/api/specialties/${editingSpecialty.id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -191,7 +191,7 @@ const AdminSpecialties = () => {
   const handleDelete = async (id) => {
     if (window.confirm('¿Estás seguro de eliminar esta especialidad?')) {
       try {
-        const response = await fetch(`http://localhost:3002/api/specialties/${id}`, {
+        const response = await fetch(`https://application-backend-4anj.onrender.com/api/specialties/${id}`, {
           method: 'DELETE',
           headers: {
             'Authorization': `Bearer ${token}`

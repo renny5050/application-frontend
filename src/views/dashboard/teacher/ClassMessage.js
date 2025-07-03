@@ -79,7 +79,7 @@ const TeacherMessages = () => {
       const decoded = decodeToken()
       if (!decoded?.id) throw new Error('No se pudo obtener el ID del profesor')
 
-      const response = await fetch(`http://localhost:3002/api/classes/teacher/${decoded.id}`, {
+      const response = await fetch(`https://application-backend-4anj.onrender.com/api/classes/teacher/${decoded.id}`, {
         headers: getAuthHeaders()
       })
 
@@ -102,7 +102,7 @@ const TeacherMessages = () => {
     }
 
     try {
-      const response = await fetch(`http://localhost:3002/api/classmessage/class/${classId}`, {
+      const response = await fetch(`https://application-backend-4anj.onrender.com/api/classmessage/class/${classId}`, {
         headers: getAuthHeaders()
       })
 
@@ -166,7 +166,7 @@ const TeacherMessages = () => {
     if (!window.confirm('¿Estás seguro de eliminar este mensaje?')) return
 
     try {
-      const response = await fetch(`http://localhost:3002/api/classmessage/${id}`, {
+      const response = await fetch(`https://application-backend-4anj.onrender.com/api/classmessage/${id}`, {
         method: 'DELETE',
         headers: getAuthHeaders()
       })
@@ -194,8 +194,8 @@ const TeacherMessages = () => {
 
     try {
       const url = isEditing 
-        ? `http://localhost:3002/api/classmessage/${currentMessage.id}` 
-        : 'http://localhost:3002/api/classmessage'
+        ? `https://application-backend-4anj.onrender.com/api/classmessage/${currentMessage.id}` 
+        : 'https://application-backend-4anj.onrender.com/api/classmessage'
       const method = isEditing ? 'PUT' : 'POST'
       
       const response = await fetch(url, {
